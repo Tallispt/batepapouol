@@ -13,7 +13,7 @@ const chat = document.querySelector(".chat");
 const chatInput = document.querySelector(".chat-input");
 const modal = document.querySelector(".modal");
 const modalContainer = document.querySelector(".modal-container");
-const loadingContainer = document.querySelector(".loading-container")
+const loadingContainer = document.querySelector(".loading-container");
 
 home.addEventListener("keypress",function(e){clickToEnter(e)})
 main.addEventListener("keypress",function(e){sendMessage(e)})
@@ -38,9 +38,7 @@ function clickToEnter(event){
                 messages = await getMessages()
                 writeMessages(messages)
                 whosOnline()
-                loading()
                 await execultByInterval()
-                scrollToEnd()
             })
             .catch(err => {
                 if(err?.response?.status === 400){
@@ -146,6 +144,7 @@ function writeMessages(chatMessages) {
             </div>`
         }
     })
+    scrollToEnd();
 }
 
 async function upDateMessages() {
@@ -160,7 +159,6 @@ async function upDateMessages() {
     if(list.length) {
         writeMessages(newMessages)
         messages = [...messages, ...newMessages]
-        scrollToEnd()
     }
 }
 
@@ -186,11 +184,12 @@ function isTheSame(a, b) {
         a.from === b.from &&
         a.time === b.time)}
 
-function scrollToEnd(){
-    document.querySelector(".chat .individual-text:nth-last-child(1)").scrollIntoView();
-}
-
 function showModal(){
     modal.classList.toggle("hidden")
     modalContainer.classList.toggle("hidden")
+}
+
+function scrollToEnd(){
+    const individualText = document.querySelector(".chat .individual-text:last-child");
+    individualText.scrollIntoView();
 }
