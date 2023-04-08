@@ -6,12 +6,14 @@ const API_URL = "https://mock-api.driven.com.br/api/v6/uol/";
 
 const home = document.querySelector(".home");
 const homeInput = document.querySelector(".home-input");
+const homeButton = document.querySelector(".home-button");
 const main = document.querySelector(".main");
 const contact = document.querySelector(".contact");
 const chat = document.querySelector(".chat");
 const chatInput = document.querySelector(".chat-input");
 const modal = document.querySelector(".modal");
 const modalContainer = document.querySelector(".modal-container");
+const loadingContainer = document.querySelector(".loading-container")
 
 home.addEventListener("keypress",function(e){clickToEnter(e)})
 main.addEventListener("keypress",function(e){sendMessage(e)})
@@ -25,6 +27,9 @@ async function execultByInterval() {
 function clickToEnter(event){
     if(event.key === "Enter" || event.target.classList.contains("home-button")) {
         name = homeInput.value
+        homeInput.classList.add('hidden')
+        homeButton.classList.add('hidden')
+        loadingContainer.classList.remove('hidden')
         if(name !== ""){
             axios.post(API_URL + "participants", {name})
             .then(async () => {
@@ -33,6 +38,7 @@ function clickToEnter(event){
                 messages = await getMessages()
                 writeMessages(messages)
                 whosOnline()
+                loading()
                 await execultByInterval()
                 scrollToEnd()
             })

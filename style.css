@@ -61,6 +61,18 @@ body {
     margin-top: 15px;
 }
 
+.loading-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    margin: 40px;
+}
+
+.loading-container p {
+    font-size: 18px;
+}
+
 /* MAIN */
 
 .main {
