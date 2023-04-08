@@ -12,6 +12,10 @@ body {
     display: none !important;
 }
 
+.selectedVisibility, .selectedPerson {
+    display: inherit !important;
+}
+
 /* HOME */
 .home {
     background-color: white;
@@ -55,7 +59,6 @@ body {
     font-size: 1.125rem;
     color: #696969;
     margin-top: 15px;
-    
 }
 
 /* MAIN */
@@ -91,11 +94,10 @@ body {
 
 .chat {
     display: flex;
-    flex-direction: column-reverse;
+    flex-direction: column;
     justify-content: flex-end;
-    padding-top: 106px;
-    height: 100vw;
-    gap: 4px;
+    margin: 85px 0px;
+    gap: 4px; 
 }
 
 
@@ -167,13 +169,12 @@ body {
     margin: 25px 0;
 }
 
-.modal-container li{
+.modal-container li, .selected{
     font-size: 1rem;
     display: flex;
     align-items: center;
     margin-bottom: 10px;
-
-
+    gap: 5px
 }
 
 .icon{
@@ -186,6 +187,7 @@ body {
     color: #28BB25;
     font-weight: bold;
     right: 27px;
+    display: none;
 }
 
 /* MESSEGES */
@@ -217,4 +219,11 @@ body {
 
 .private-message {
     background-color: #FFDEDE;
+}
+
+/* HOVER */
+
+.home-button:hover, .header ion-icon:hover, .modal-container li:hover, .modal-container li:hover, .footer ion-icon:hover{
+    cursor: pointer;
+    opacity: 0.6;
 }

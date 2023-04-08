@@ -1,85 +1,179 @@
 let name;
+let person = "Todos";
+let visibility = "message";
+let messages;
 
-function clickToEnter(){
-    name = { name: document.querySelector('.home-input').value}
-    if(name !== ''){
-        let promise = axios.post('https://mock-api.driven.com.br/api/v6/uol/participants', name)
-        promise
-        .then(response => {
-            document.querySelector('.home').classList.add('hidden');
-            document.querySelector('.main').classList.remove('hidden');
-            setInterval(keepOnline, 5000)
-            setInterval(getMessages, 3000)
-            setInterval(whosOnline, 10000)
-        })
-        .catch(err => {
-            if(error.response.status === 400){
-                let input = document.querySelector('.home-input')
-                input.value = ''
-                input.setAttribute('placeholder', 'Nome já utilizado')
-            }
-        })
+document.querySelector('.home').addEventListener('keypress',function(e){clickToEnter(e)})
+document.querySelector('.main').addEventListener('keypress',function(e){sendMessage(e)})
+
+async function execultByInterval() {
+    setInterval(keepOnline, 5000)
+    setInterval(upDateMessages, 3000)
+    setInterval(whosOnline, 10000)
+}
+
+function clickToEnter(event){
+    if(event.key === 'Enter' || event.target.classList.contains('home-button')) {
+        name = document.querySelector('.home-input').value
+        if(name !== ''){
+            axios.post('https://mock-api.driven.com.br/api/v6/uol/participants', {name})
+            .then(async () => {
+                document.querySelector('.home').classList.add('hidden');
+                document.querySelector('.main').classList.remove('hidden');
+                messages = await getMessages()
+                writeMessages(messages)
+                whosOnline()
+                await execultByInterval()
+                scrollToEnd()
+            })
+            .catch(err => {
+                if(err?.response?.status === 400){
+                    let input = document.querySelector('.home-input')
+                    input.value = ''
+                    input.setAttribute('placeholder', 'Nome já utilizado')
+                }
+            })
+        }
     }
 }
 
 function keepOnline(){
-    let promise = axios.post('https://mock-api.driven.com.br/api/v6/uol/status', name)
-    promise
+    axios.post('https://mock-api.driven.com.br/api/v6/uol/status', {name})
     .then()
     .catch(err => console.log(err))
 }
 
 function whosOnline(){
-    let promise = axios.get('https://mock-api.driven.com.br/api/v6/uol/participants')
-    promise.then(value => {
+    axios.get('https://mock-api.driven.com.br/api/v6/uol/participants')
+    .then(value => {
         let people = value.data
         let list = document.querySelector('.contact')
-        for(let i=0; i<people.length; i++){
-            list.innerHTML += 
-            `<li>
-                <ion-icon name="person-circle" class="icon"></ion-icon>
-                ${people[i].name}
+        list.innerHTML = 
+            `<li class="Todos"  onclick="togglePerson(event)">
+                <ion-icon name="people" class="icon"></ion-icon>
+                Todos
                 <ion-icon name="checkmark" class="checkmark"></ion-icon>
             </li>`
+        people.map(value => {
+            if(value.name !== name) {
+                list.innerHTML += 
+                `<li class="${value.name}"  onclick="togglePerson(event)">
+                    <ion-icon name="person-circle" class="icon"></ion-icon>
+                    ${value.name}
+                    <ion-icon name="checkmark" class="checkmark"></ion-icon>
+                </li>`
+            }
+        })
+
+        if(!people.some(({name}) => name === person)) {
+            person = 'Todos'
+        }
+        document.querySelector(`.${person}`).querySelector('.checkmark').classList.add('selectedPerson')
+    })
+    .catch(err => console.log(err))
+}
+
+function toggleVisibility(event) {
+    if(person !== "Todos") {
+        document.querySelector('.selectedVisibility').classList.remove('selectedVisibility')
+
+        const t = event.target
+        visibility = t.classList.value
+        t.querySelector(".checkmark").classList.toggle('selectedVisibility')
+    }
+}
+
+function togglePerson(event) {
+    document.querySelector('.selectedPerson').classList.remove('selectedPerson')
+
+    const t = event.target
+    person = t.classList.value
+    t.querySelector(".checkmark").classList.toggle('selectedPerson')
+
+    if(person === "Todos" && visibility === "private_message") {
+        document.querySelector('.selectedVisibility').classList.remove('selectedVisibility')
+        
+        visibility = 'message'
+        document.querySelector('.message').querySelector('.checkmark').classList.toggle('selectedVisibility')
+    }
+}
+
+async function getMessages(){
+    const {data} = await axios.get('https://mock-api.driven.com.br/api/v6/uol/messages')
+    return data
+}
+
+function writeMessages(chatMessages) {
+    const chat = document.querySelector('.chat')
+
+    chatMessages.map(message => {
+        if(message.type === "status"){
+            chat.innerHTML += 
+            `<div class="individual-text status">
+                <span>(${message.time})</span>
+                <span class="bold">${message.from}</span>
+                ${message.text}
+            </div>`
+        } if(message.type === 'message'){
+            chat.innerHTML += 
+            `<div class="individual-text message">
+                <span>(${message.time})</span>
+                <span class="bold">${message.from}</span>
+                 para <span class="bold">${message.to}</span>
+                 ${message.text}
+            </div>`
+        } if(message.type === 'private_message' && (
+            message.to === name || message.from === name
+        )){
+            chat.innerHTML += 
+            `<div class="individual-text private-message">
+                <span>(${message.time})</span>
+                <span class="bold">${message.from}</span>
+                 reservadamente para <span class="bold">${message.to}</span>
+                ${message.text}
+            </div>`
         }
     })
 }
 
-function getMessages(){
-    let messages = axios.get('https://mock-api.driven.com.br/api/v6/uol/messages')
-    messages.then(data => {
-        let messages = data.data
-        let chat = document.querySelector('.chat')
-        for(let i=0; i < messages.length; i++){
-            if(messages[i].type === "status"){
-                chat.innerHTML += 
-                `<div class="individual-text status">
-                    <span>(${messages[i].time})</span>
-                    <span class="bold">${messages[i].from}</span>
-                    ${messages[i].text}
-                </div>`
-            } if(messages[i].type === 'message'){
-                chat.innerHTML += 
-                `<div class="individual-text message">
-                    <span>(${messages[i].time})</span>
-                    <span class="bold">${messages[i].from}</span>
-                     para <span class="bold">${messages[i].to}</span>
-                     ${messages[i].text}
-                </div>`
-            } if(messages[i].type === 'private_message'){
-                chat.innerHTML += 
-                `<div class="individual-text private_message">
-                    <span>(${messages[i].time})</span>
-                    <span class="bold">${messages[i].from}</span>
-                     reservadamente para <span class="bold">${messages[i].to}</span>
-                    ${messages[i].text}
-                </div>`
-            }
-        }
-        scrollToEnd()
+async function upDateMessages() {
+    let newMessages = await getMessages()
+                
+    const list = newMessages.filter(newMessageValue => {
+        return !messages.some(messagevalue => {
+            return isTheSame(newMessageValue, messagevalue)
+        })
     })
-    .catch(err => console.log(err))
+
+    if(list.length) {
+        writeMessages(newMessages)
+        messages = [...messages, ...newMessages]
+        scrollToEnd()
+    }
 }
+
+function sendMessage(event){
+    const input = document.querySelector('.chat-input')
+    if(event.key === 'Enter' && input.value !== '') {
+        const message = {
+            from: name,
+            to: person,
+            text: input.value,
+            type: visibility
+        }
+        axios.post('https://mock-api.driven.com.br/api/v6/uol/messages', message)
+        .then(
+            input.value = ''
+        )
+        .catch(err => console.log(err))
+    }
+}
+
+function isTheSame(a, b) { 
+    return (a.type === b.type &&
+        a.to === b.to &&
+        a.from === b.from &&
+        a.time === b.time)}
 
 function scrollToEnd(){
     document.querySelector('.chat .individual-text:nth-last-child(1)').scrollIntoView();
