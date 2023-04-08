@@ -1,10 +1,8 @@
-let name;
+let name, messages;
 let person = "Todos";
 let visibility = "message";
-let messages;
 
 const API_URL = "https://mock-api.driven.com.br/api/v6/uol/";
-
 
 const home = document.querySelector(".home");
 const homeInput = document.querySelector(".home-input");
